@@ -35,130 +35,54 @@
   </div>
 
 <script lang="javascript">
-// select all the .item elements
-const items = document.querySelectorAll('.item');
+ const container = document.getElementById('container');
 
-// define the variables
-let isDragging = false;
-let initialMousePosition = { x: 0, y: 0 };
-let initialCubePosition = { x: 0, y: 0 };
-
-// add the mousedown event listener to each .item element
-items.forEach(item => {
-  item.addEventListener('mousedown', function(event) {
-    isDragging = true;
-    initialMousePosition.x = event.clientX;
-    initialMousePosition.y = event.clientY;
-    initialCubePosition.x = event.target.offsetLeft;
-    initialCubePosition.y = event.target.offsetTop;
-    console.log("Mouse down event triggered");
-  });
-});
-document.addEventListener('mousemove', function(event) {
-  // check if isDragging is true
-  if (!isDragging) return;
-
-  // calculate the new position of the cube
-  const dx = event.clientX - initialMousePosition.x;
-  const dy = event.clientY - initialMousePosition.y;
-  const newCubePosition = {
-    x: initialCubePosition.x + dx,
-    y: initialCubePosition.y + dy
-  };
-
-  // update the position of the cube
-  item.style.left = `${newCubePosition.x}px`;
-  item.style.top = `${newCubePosition.y}px`;
-});
-document.addEventListener('mouseup', function(event) {
-  // set isDragging to false
-  isDragging = false;
-});
-
-	document.addEventListener('mousemove', function(event) {
-  // check if isDragging is true
-  if (!isDragging) return;
-
-  // calculate the new position of the cube
-  const dx = event.clientX - initialMousePosition.x;
-  const dy = event.clientY - initialMousePosition.y;
-  let newCubePosition = {
-    x: initialCubePosition.x + dx,
-    y: initialCubePosition.y + dy
-  };
-
-  // get the dimensions of the container
-  const container = document.querySelector('.items');
-  const containerRect = container.getBoundingClientRect();
-
-  // ensure the cube doesn't go outside the container
-  if (newCubePosition.x < containerRect.left) newCubePosition.x = containerRect.left;
-  if (newCubePosition.y < containerRect.top) newCubePosition.y = containerRect.top;
-  if (newCubePosition.x + item.offsetWidth > containerRect.right) newCubePosition.x = containerRect.right - item.offsetWidth;
-  if (newCubePosition.y + item.offsetHeight > containerRect.bottom) newCubePosition.y = containerRect.bottom - item.offsetHeight;
-
-  // update the position of the cube
-  item.style.left = `${newCubePosition.x}px`;
-  item.style.top = `${newCubePosition.y}px`;
-});
-	let selectedItem = null;
-
-items.forEach(item => {
-  item.addEventListener('mousedown', function(event) {
-    // stop dragging the previous item
-    if (selectedItem) {
-      selectedItem.style.position = '';
-      selectedItem = null;
-      isDragging = false;
+    // Create and append cubes dynamically
+    for (let i = 1; i <= 25; i++) {
+      const div = document.createElement('div');
+      div.classList.add('item');
+      div.textContent = i;
+      div.style.left = `${(i - 1) % 5 * 60}px`;
+      div.style.top = `${Math.floor((i - 1) / 5) * 60}px`;
+      container.appendChild(div);
     }
 
-    // start dragging the new item
-    selectedItem = event.target;
-    selectedItem.style.position = 'absolute';
-    isDragging = true;
-    initialMousePosition.x = event.clientX;
-    initialMousePosition.y = event.clientY;
-    initialCubePosition.x = selectedItem.offsetLeft;
-    initialCubePosition.y = selectedItem.offsetTop;
-  });
-});
-document.addEventListener('mouseup', function(event) {
-  // set isDragging to false
-  isDragging = false;
+    let selectedItem = null;
+    let offsetX = 0, offsetY = 0;
 
-  // reset the selectedItem
-  if (selectedItem) {
-    selectedItem.style.position = '';
-    selectedItem = null;
-  }
-});
-	// add the 'selected' class in the mousedown event listener
-selectedItem.classList.add('selected');
+    document.addEventListener('mousedown', function(event) {
+      if (event.target.classList.contains('item')) {
+        selectedItem = event.target;
+        offsetX = event.clientX - selectedItem.offsetLeft;
+        offsetY = event.clientY - selectedItem.offsetTop;
+        selectedItem.style.cursor = 'grabbing';
+      }
+    });
 
-// remove the 'selected' class in the mouseup event listener
-if (selectedItem) {
-  selectedItem.classList.remove('selected');
-  selectedItem.style.position = '';
-  selectedItem = null;
-}
-document.addEventListener('mousemove', function(event) {
-  // check if isDragging is true
-  if (!isDragging) return;
+    document.addEventListener('mousemove', function(event) {
+      if (!selectedItem) return;
 
-  // calculate the new position of the cube
-  const dx = event.clientX - initialMousePosition.x;
-  const dy = event.clientY - initialMousePosition.y;
-  let newCubePosition = {
-    x: initialCubePosition.x + dx,
-    y: initialCubePosition.y + dy
-  };
+      let x = event.clientX - offsetX;
+      let y = event.clientY - offsetY;
+      const containerRect = container.getBoundingClientRect();
+      const itemRect = selectedItem.getBoundingClientRect();
 
-  // update the position of the cube
-  selectedItem.style.left = `${newCubePosition.x}px`;
-  selectedItem.style.top = `${newCubePosition.y}px`;
+      // Prevent moving out of the container
+      if (x < 0) x = 0;
+      if (y < 0) y = 0;
+      if (x + itemRect.width > containerRect.width) x = containerRect.width - itemRect.width;
+      if (y + itemRect.height > containerRect.height) y = containerRect.height - itemRect.height;
 
-  console.log("Mouse move event triggered");
-});
+      selectedItem.style.left = `${x}px`;
+      selectedItem.style.top = `${y}px`;
+    });
+
+    document.addEventListener('mouseup', function() {
+      if (selectedItem) {
+        selectedItem.style.cursor = 'grab';
+        selectedItem = null;
+      }
+    });
 </script>
 
   </body>
